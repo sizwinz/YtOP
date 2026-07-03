@@ -4,7 +4,7 @@
 
 <br/>
 
-[![Install Userscript](https://img.shields.io/badge/Install-Userscript-red?style=for-the-badge&logo=tampermonkey&logoColor=white)](https://raw.githubusercontent.com/Sahaj33-op/YtOP/master/YouTube%20Enhanced%20Suite.user.js)
+[![Install Userscript](https://img.shields.io/badge/Install-Userscript-red?style=for-the-badge&logo=tampermonkey&logoColor=white)](https://raw.githubusercontent.com/sizwinz/YtOP/master/YouTube%20Enhanced%20Suite.user.js)
 
 *⚠️ Note: This userscript requires the local Python bridge server running in the background to process downloads.*
 
@@ -54,7 +54,7 @@ A light-weight YouTube integration, plus a local download suite. ytOP helps smoo
 ### Step 1: Clone the Repository
 Clone this repository to your local machine to obtain the Python bridge server and runner scripts:
 ```bash
-git clone https://github.com/Sahaj33-op/YtOP.git
+git clone https://github.com/sizwinz/YtOP.git
 cd YtOP
 ```
 
