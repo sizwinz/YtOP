@@ -139,7 +139,7 @@ Downloads execute asynchronously through your local system binaries (`yt-dlp` an
 ### Step 1: Clone Repository
 
 ```bash
-git clone https://github.com/Sahaj33-op/YtOP.git
+git clone https://github.com/sizwinz/YtOP.git
 cd YtOP
 ```
 

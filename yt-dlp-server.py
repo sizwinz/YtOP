@@ -413,7 +413,7 @@ def run_tray(server_obj):
 
     def open_github(icon, item):
         import webbrowser
-        webbrowser.open("https://github.com/Sahaj33-op/YtOP")
+        webbrowser.open("https://github.com/sizwinz/YtOP")
 
     # Generate icon in memory
     try:
@@ -451,8 +451,8 @@ if __name__ == "__main__":
     print("║   ytOP: yt-dlp Local Bridge Server                   ║")
     print(f"║   URL:      http://127.0.0.1:{PORT:<29}║")
     print(f"║   Save path: {DOWNLOAD_DIR[:39]:<40}║")
-    print("║   GitHub:   https://github.com/Sahaj33-op/YtOP       ║")
-    print("║   Author:   Sahaj33-op                               ║")
+    print("║   GitHub:   https://github.com/sizwinz/YtOP       ║")
+    print("║   Author:   sizwinz                               ║")
     if TRAY_AVAILABLE:
         print("║   System Tray: Active (Pystray enabled)              ║")
     else:
