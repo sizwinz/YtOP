@@ -1,244 +1,276 @@
 <div align="center">
 
-<img src="ytOP.png" alt="ytOP Logo" width="120" style="border-radius: 12px; margin-bottom: 15px;" />
+<img src="ytOP.png" alt="ytOP Logo" width="100" />
+
+# ytOP
+
+### YouTube Enhanced Suite and Local Download Engine
+
+A modular YouTube power-user suite integrating browser playback enhancements with a local, multi-threaded `yt-dlp` and `FFmpeg` bridge.
 
 <br/>
 
-[![Install Userscript](https://img.shields.io/badge/Install-Userscript-red?style=for-the-badge&logo=tampermonkey&logoColor=white)](https://raw.githubusercontent.com/Sahaj33-op/YtOP/master/YouTube%20Enhanced%20Suite.user.js)
+[![Install Userscript](https://img.shields.io/badge/Install-Userscript-DC2626?style=for-the-badge&logo=tampermonkey&logoColor=white)](https://raw.githubusercontent.com/Sahaj33-op/YtOP/master/YouTube%20Enhanced%20Suite.user.js)
 
-*⚠️ Note: This userscript requires the local Python bridge server running in the background to process downloads.*
+[![Version](https://img.shields.io/badge/Version-3.2.0-2563EB?style=flat-square)](https://github.com/Sahaj33-op/YtOP)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![yt-dlp](https://img.shields.io/badge/yt--dlp-Latest-FF0000?style=flat-square&logo=youtube&logoColor=white)](https://github.com/yt-dlp/yt-dlp)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-007808?style=flat-square&logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
+[![License](https://img.shields.io/badge/License-MIT-gray?style=flat-square)](LICENSE)
 
 <br/>
 
-![Version](https://img.shields.io/badge/version-3.2.0-blue?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python&logoColor=white)
-![yt-dlp](https://img.shields.io/badge/yt--dlp-Dependency-orange?style=for-the-badge&logo=youtube&logoColor=white)
-![FFmpeg](https://img.shields.io/badge/FFmpeg-Dependency-green?style=for-the-badge&logo=ffmpeg&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+<img src="ytOP-interface.png" alt="ytOP Interface Preview" width="840" />
 
 </div>
 
-<div align="center">
-  <img src="ytOP-interface.png" alt="ytOP Interface" width="700" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin-top: 10px; margin-bottom: 20px;" />
-</div>
+---
 
-A light-weight YouTube integration, plus a local download suite. ytOP helps smooth out that in between place, between browser comfort and raw CLI control, sorta bridging a lovely Tampermonkey userscript overlay with a multi-threaded Python backend server, run with yt-dlp and ffmpeg.
+## Overview
+
+ytOP bridges the gap between browser convenience and the raw power of command-line media tools. It couples a lightweight Tampermonkey userscript with a local Python background bridge (`http://127.0.0.1:9898`) to deliver full-quality stream extraction, hardware-accelerated muxing, and granular player controls directly within YouTube.
+
+Downloads execute asynchronously through your local system binaries (`yt-dlp` and `FFmpeg`), ensuring maximum throughput, custom resolution selection, and zero reliance on third-party web converters.
 
 ---
 
-## 📖 Table of Contents
-*   [Installation & Setup](#-installation--setup)
-*   [Key Features](#-key-features)
-*   [Architecture Flow](#%EF%B8%8F-architecture-flow)
-*   [File Structure](#-file-structure)
-*   [Configurations](#-configurations)
-*   [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
-*   [Disclaimer](#-disclaimer)
+## Key Capabilities
+
+### 1. Multi-Stream Media Downloader
+* **Dynamic Stream Discovery**: Queries YouTube's format manifests in real time for watch pages and Shorts.
+* **Categorized Quality Tiers**:
+  * **Video + Audio**: Muxed high-definition tracks (1080p, 1440p, 4K, 8K) paired with best available audio and merged via FFmpeg.
+  * **Video Only**: Direct video streams without audio tracks.
+  * **Audio Only**: Pristine source audio streams (M4A, Opus, WebM) and auto-converted MP3 presets.
+* **Format Filtering**: One-click filter chips to isolate specific container formats (`MP4`, `WEBM`, `M4A`, `OPUS`).
+* **Estimated File Sizes**: Calculated byte sizes displayed per quality tier before initiating downloads.
+
+### 2. Non-Blocking Progress and Background Execution
+* **Inline Transfer Metrics**: Live progress percentages, download speed, and ETA indicators.
+* **Floating Mini-Player Mode**: Minimize the download modal into an unobtrusive floating status card using the minimize button or pressing `M`.
+* **State Persistence**: Navigate to other YouTube videos while downloads continue undisturbed in the background.
+* **Safe Dismissal**: Pressing `Esc` or clicking outside the interface automatically collapses the active task into the mini-card rather than terminating the process.
+
+### 3. Integrated Player Controls
+* **Quick Speed Presets**: Instant playback rates ranging from `0.5x` to `3.0x`.
+* **Fine-Grained Speed Adjustments**: Step up or down by `0.25x` increments (supports range from `0.1x` to `16.0x`).
+* **A/B Loop Range**: Set custom start (`A`) and end (`B`) timestamps for continuous segment repetition.
+* **HD Frame Capture**: Capture full-resolution screenshots directly from the video canvas.
+* **Cinema Mode Overlay**: Focus lighting mode that dims surrounding YouTube interface clutter.
+* **On-Screen Display (OSD)**: Minimal visual toast indicators for speed, loop markers, and status changes.
+
+### 4. Local Python Bridge Server
+* **Auto-Discovery**: Automatically detects `yt-dlp` and `ffmpeg` from system `PATH` and standard Windows WinGet directories.
+* **Threaded Queue**: Handles concurrent format extraction and download tasks without freezing the interface.
+* **Localhost Security**: Binds exclusively to `127.0.0.1:9898` with origin verification restricted to `https://www.youtube.com`.
+* **Optional System Tray**: Desktop tray icon with quick actions to stop the server, open the downloads folder, or visit the repository.
 
 ---
 
-## 🚀 Installation & Setup
+## Architecture Flow
+
+```
++-----------------------------------------------------------------------+
+|                         YouTube Client (Browser)                      |
+|                                                                       |
+|   Tampermonkey / Violentmonkey Userscript                             |
+|   - Format discovery interface and filter pills                       |
+|   - Speed controls, A/B looping, cinema mode, frame capture           |
+|   - Floating background mini-card and progress tracking               |
++-----------------------------------+-----------------------------------+
+                                    |
+                         HTTP (JSON / REST API)
+                         Origin: https://www.youtube.com
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                    Local Python Bridge Server                         |
+|                    http://127.0.0.1:9898                              |
+|                                                                       |
+|   yt-dlp-server.py (ThreadingHTTPServer)                              |
+|   - GET  /health          : Status validation and dependency check    |
+|   - GET  /formats?url=... : Format extraction via yt-dlp metadata     |
+|   - POST /download        : Non-blocking process invocation           |
+|   - GET  /progress?url=.. : Real-time transfer statistics             |
+|   - GET  /cancel?url=...  : Graceful process termination              |
++-----------------------------------+-----------------------------------+
+                                    |
+                             Subprocess Pipe
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                       Local System Toolchain                          |
+|                                                                       |
+|   yt-dlp.exe                      FFmpeg.exe                          |
+|   - Media stream retrieval        - Audio/Video multiplexing          |
+|   - Protocol parsing (DASH/HLS)   - Audio transcoding & post-process  |
++-----------------------------------+-----------------------------------+
+                                    |
+                               File Write
+                                    |
+                                    v
++-----------------------------------------------------------------------+
+|                       Output Storage Target                           |
+|                       ~/Downloads/ytOP/                               |
++-----------------------------------------------------------------------+
+```
+
+---
+
+## Installation and Setup
 
 ### Prerequisites
-*   [Python 3.x](https://www.python.org/)
-*   A userscript manager extension (e.g., [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/))
-*   `yt-dlp` and `ffmpeg` installed. We recommend installing via WinGet:
-    ```powershell
-    winget install yt-dlp Gyan.FFmpeg
-    ```
-*   *(Optional)* `pystray` and `Pillow` to enable the system tray status icon:
-    ```powershell
-    pip install pystray Pillow
-    ```
 
-### Step 1: Clone the Repository
-Clone this repository to your local machine to obtain the Python bridge server and runner scripts:
+1. **Python 3.8+**: Ensure Python is installed and added to your system `PATH`.
+2. **Userscript Manager**: Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/) in your browser.
+3. **Core Dependencies (`yt-dlp` and `FFmpeg`)**:
+   Install via Windows Package Manager:
+   ```powershell
+   winget install yt-dlp Gyan.FFmpeg
+   ```
+4. **Optional Desktop Tray Dependencies**:
+   To enable the system tray icon, install `pystray` and `Pillow`:
+   ```powershell
+   pip install pystray Pillow
+   ```
+
+---
+
+### Step 1: Clone Repository
+
 ```bash
 git clone https://github.com/Sahaj33-op/YtOP.git
 cd YtOP
 ```
 
-### Step 2: Install the Userscript
-Click the prominent **Install Userscript** badge at the top of this page to install directly, or:
-1. Open Tampermonkey in your browser and select **Create a new script**.
-2. Replace the template code with the contents of **[YouTube Enhanced Suite.user.js](YouTube%20Enhanced%20Suite.user.js)**.
-3. Save the script (`Ctrl + S`).
+### Step 2: Install Userscript
 
-### Step 3: Run the Local Bridge Server
-*   Double-click **[start-server.bat](start-server.bat)** to launch the console bridge.
-*   *Alternatively*, run **[start-silent.vbs](start-silent.vbs)** to execute the server invisibly in the background.
+1. Click the **[Install Userscript](https://raw.githubusercontent.com/Sahaj33-op/YtOP/master/YouTube%20Enhanced%20Suite.user.js)** badge or direct link.
+2. Tampermonkey will prompt you to confirm the installation. Click **Install**.
+3. Alternatively, open Tampermonkey, create a new script, paste the contents of `YouTube Enhanced Suite.user.js`, and save (`Ctrl + S`).
 
----
+### Step 3: Start Bridge Server
 
-## 🌟 Key Features
+Choose your preferred startup mode:
 
-<details>
-<summary>⚡ Click to expand Key Features list</summary>
+| Method | Script | Description |
+| :--- | :--- | :--- |
+| **Interactive Console** | `start-server.bat` | Launches the server inside an active terminal window with live log outputs. |
+| **Silent Background** | `start-silent.vbs` | Runs the server completely hidden in the background with zero desktop windows. |
 
-<details style="margin-top: 10px; margin-left: 10px;">
-<summary>🎮 Player Enhancement & Controls</summary>
-
-*   **Speed Tuning**: Instant speed preset buttons (`0.5x` to `3x`) plus high-fidelity fine-tuning controls (`-` / `+` in steps of `0.25x`).
-*   **Player Extras**: Native cinema mode overlay, A/B looping boundaries, and high-definition canvas screenshots.
-*   **OSD (On-Screen Display)**: Sleek, non-intrusive micro-animations indicating status updates directly over the YouTube player.
-</details>
-
-<details style="margin-top: 10px; margin-left: 10px;">
-<summary>📥 High-Speed Multi-Format Downloader</summary>
-
-*   **Intelligent Formats Extraction**: Dynamic extraction of available media profiles directly inside watch and shorts pages.
-*   **Tabbed Interface**: Clean separation for `Video + Audio` (muxed streams), `Video Only` (raw streams), and `Audio Only` (audios).
-*   **Dynamic Extension Filters**: Filter profiles instantly via clickable format pills (e.g. `[MP4]`, `[WEBM]`, `[M4A]`, `[OPUS]`).
-</details>
-
-<details style="margin-top: 10px; margin-left: 10px;">
-<summary>⚡ Live Progress & Background Execution</summary>
-
-*   **Sleek Inline Progress Tracks**: A 3px horizontal red progress line glides along the format row during active downloads.
-*   **Tooltips**: Hovering the button exposes real-time transfer speeds and ETA.
-*   **Minimize to Background**: Click the minimize (`🗕`) button or press `M` to collapse the overlay into a compact, interactive floating card. Browse or watch other videos on YouTube while the download runs in the background.
-*   **Self-Restoring State**: Click the minimized card to expand the modal back to its original state.
-*   **Auto-Minimize on Close**: Hitting `Esc` or clicking outside the modal during active downloads auto-minimizes the window instead of destroying it.
-</details>
-
-<details style="margin-top: 10px; margin-left: 10px; margin-bottom: 10px;">
-<summary>🛠 System Self-Healing & Diagnostics</summary>
-
-*   **Auto-Resolution**: The Python backend checks system PATH and automatically resolves WinGet installation directories for `ffmpeg` and `yt-dlp` to ensure a zero-config start.
-*   **Availability Warnings**: Startup verification checks. If FFmpeg is missing from the environment, a `(⚠️ FFmpeg missing)` warning is highlighted in the modal footer.
-</details>
-
-</details>
+To stop a running background server, execute `stop-server.bat` or use the system tray context menu.
 
 ---
 
-## ⚙️ Architecture Flow
-
-<details>
-<summary>🔗 Click to expand Architecture Diagram</summary>
+## File Structure
 
 ```
-+---------------------------------------------------------+
-|                  YouTube Watch Page                     |
-|                                                         |
-|  [ Tampermonkey / Violentmonkey Userscript Overlay ]    |
-|   - Interactive format lists & filter chips             |
-|   - Minimize button, keyboard shortcuts, progress bar  |
-+---------------------------+-----------------------------+
-                            |
-                 (POST /download, GET /progress)
-                            |
-                            v
-+---------------------------------------------------------+
-|             Local Python Bridge Server                  |
-|                 (http://127.0.0.1:9898)                 |
-|                                                         |
-|  [ Multi-Threaded HTTP Server & Progress Manager ]      |
-|   - Executable path self-resolution (WinGet path lookup)|
-|   - Real-time stdout regex stream parsing               |
-+---------------------------+-----------------------------+
-                            |
-                   (subprocess.Popen)
-                            |
-                            v
-+---------------------------------------------------------+
-|               System Binaries (CLI)                     |
-|                                                         |
-|        [ yt-dlp.exe ]  =======>  [ ffmpeg.exe ]         |
-|      (Stream Fetcher)          (Format Muxer/Joiner)    |
-+---------------------------------------------------------+
+YtOP/
+├── YouTube Enhanced Suite.user.js   # Browser client userscript (UI, player controls, API client)
+├── yt-dlp-server.py                 # Multi-threaded HTTP bridge server and process orchestrator
+├── start-server.bat                 # Standard interactive terminal launcher
+├── start-silent.vbs                 # VBScript runner for hidden background execution
+├── stop-server.bat                  # Process killer to cleanly shut down active server instances
+├── ytOP.png                         # Project branding and documentation assets
+├── ytOP-interface.png               # Modal interface screenshot preview
+├── ytOP-trayicon.png                # System tray context menu preview
+├── .gitignore                       # Git exclusions for virtual environments and runtime artifacts
+└── README.md                        # Documentation and user reference
 ```
 
-</details>
+---
+
+## Configuration
+
+Server settings can be customized directly in `yt-dlp-server.py`:
+
+```python
+# Server connection port
+PORT = 9898
+
+# Destination directory for downloaded media files
+DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads", "ytOP")
+
+# Allowed request origin for CORS security
+ALLOWED_ORIGIN = "https://www.youtube.com"
+
+# Manual binary path overrides (leave default for auto-detection)
+YTDLP_BIN = "yt-dlp"
+FFMPEG_BIN = "ffmpeg"
+```
 
 ---
 
-## 📁 File Structure
+## Controls and Shortcuts
 
-*   `YouTube Enhanced Suite.user.js` - Tampermonkey userscript containing the client UI and player controls.
-*   `yt-dlp-server.py` - Multi-threaded Python server handling background subprocess spawning and progress reports.
-*   `start-server.bat` - Standard console window startup script.
-*   `start-silent.vbs` - Visual Basic script to launch the server silently.
-*   `stop-server.bat` - Shell script to automatically search and terminate active server processes.
-*   `.gitignore` - Pre-configured git rules to ignore caches and IDE configurations.
-
----
-
-## 🛠 Configurations
-
-You can modify the following variables inside **[yt-dlp-server.py](yt-dlp-server.py)**:
-*   `PORT`: Port for the local bridge server (default: `9898`).
-*   `DOWNLOAD_DIR`: Absolute path to save downloads (default: `%USERPROFILE%/Downloads/ytOP`).
-*   `FFMPEG_BIN` / `YTDLP_BIN`: Customize absolute paths to the binaries if not using standard system installation paths.
+| Action | Control / Shortcut | Description |
+| :--- | :--- | :--- |
+| **Open Download Modal** | Click `Download` button | Fetches media formats and displays the format picker overlay. |
+| **Minimize / Restore** | `M` key or `_` header button | Collapses modal into a floating card; click card to restore. |
+| **Dismiss Modal** | `Esc` key or click outside | Closes inactive modal or auto-minimizes during active downloads. |
+| **Fine Speed Tuning** | `+` / `-` buttons | Increments or decrements player playback speed by `0.25x`. |
+| **A/B Loop** | `Loop` button | Click once to mark point A, click again for point B, click once more to reset. |
+| **Frame Capture** | `Screenshot` button | Extracts a full-resolution PNG capture of the current video frame. |
+| **Cinema Mode** | `Cinema` button | Activates dimmed backdrop overlay around the YouTube player. |
 
 ---
 
-## ❓ Frequently Asked Questions (FAQ)
+## System Tray Integration
 
-<details style="margin-top: 10px;">
-<summary><b>How do I start the server silently in the background?</b></summary>
-<br/>
-
-Instead of double-clicking `start-server.bat` (which leaves a Command Prompt window open), double-click **[start-silent.vbs](start-silent.vbs)**. This runs the Python server completely in the background.
-</details>
-
-<details style="margin-top: 10px;">
-<summary><b>How do I stop the background server?</b></summary>
-<br/>
-
-To stop the silent background server, double-click **[stop-server.bat](stop-server.bat)** in this repository folder. It will find the running Python server process and terminate it immediately. Alternatively, if you have the optional system tray icon enabled, simply right-click the red tray icon and select **Stop Server**.
-</details>
-
-<details style="margin-top: 10px;">
-<summary><b>How do I enable and use the system tray icon?</b></summary>
-<br/>
-
-If you install the optional tray dependencies (`pip install pystray Pillow`), a red download arrow icon will automatically appear in your Windows system tray when the server is running.
-* Right-click the icon to quickly **Stop Server**, **Open Downloads Folder**, or open the **GitHub Repository**.
-* If the libraries are not installed, the server will seamlessly run in standard console/background mode without crashing.
-
-<br/>
+When `pystray` and `Pillow` are installed, ytOP initializes an icon in the Windows taskbar tray:
 
 <div align="center">
-  <img src="ytOP-trayicon.png" alt="ytOP System Tray Icon & Context Menu" width="280" style="border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.25);" />
+  <img src="ytOP-trayicon.png" alt="ytOP Tray Icon Context Menu" width="300" />
 </div>
-</details>
 
-<details style="margin-top: 10px;">
-<summary><b>How do I make the server start automatically when my computer boots?</b></summary>
-<br/>
+* **Open Downloads Folder**: Opens `~/Downloads/ytOP` in Windows Explorer.
+* **GitHub Repository**: Launches the repository page in your default browser.
+* **Stop Server**: Shuts down the HTTP server and cleans up active processes.
+
+If tray dependencies are omitted, the server runs normally in headless console mode.
+
+---
+
+## Frequently Asked Questions
+
+<details>
+<summary><b>How can I configure ytOP to start automatically on Windows boot?</b></summary>
 
 1. Press `Win + R` to open the Windows Run dialog.
-2. Type `shell:startup` and press **Enter** (this opens your Windows Startup folder).
+2. Type `shell:startup` and press **Enter** to open the Windows Startup directory.
 3. Right-click inside the folder, select **New ➔ Shortcut**.
-4. Click **Browse...**, select **[start-silent.vbs](start-silent.vbs)**, and click **Finish**.
+4. Browse and select `start-silent.vbs` located in your cloned `YtOP` directory.
+5. Click **Finish**. The server will now start silently whenever Windows boots.
 </details>
 
-<details style="margin-top: 10px;">
-<summary><b>Why do I see a <code>(⚠️ FFmpeg missing)</code> warning?</b></summary>
-<br/>
+<details>
+<summary><b>Why is the interface showing an "FFmpeg missing" notice?</b></summary>
 
-The bridge server checked your PATH and standard folders but could not find a valid `ffmpeg.exe` installation. To resolve this:
-* Make sure FFmpeg is installed (e.g. via `winget install Gyan.FFmpeg`).
-* If already installed, open **[yt-dlp-server.py](yt-dlp-server.py)** and set `FFMPEG_BIN` to the absolute path of your executable (e.g. `r"C:\tools\ffmpeg\bin\ffmpeg.exe"`).
+High-resolution streams (1080p, 1440p, 4K, 8K) require FFmpeg to merge video and audio streams. If this indicator appears:
+* Verify FFmpeg is installed (`winget install Gyan.FFmpeg`).
+* If installed in a non-standard directory, update `FFMPEG_BIN` in `yt-dlp-server.py` with the absolute path to `ffmpeg.exe` (for example, `r"C:\tools\ffmpeg\bin\ffmpeg.exe"`).
 </details>
 
-<details style="margin-top: 10px;">
-<summary><b>Can I change where downloaded videos are saved?</b></summary>
-<br/>
+<details>
+<summary><b>Is the local bridge server secure?</b></summary>
 
-Yes. Open **[yt-dlp-server.py](yt-dlp-server.py)** and update the `DOWNLOAD_DIR` path to any directory of your choice.
+Yes. The server binds strictly to the `127.0.0.1` loopback interface, meaning external devices on your local network cannot access it. Furthermore, CORS headers explicitly reject cross-origin requests originating outside `https://www.youtube.com`.
 </details>
 
-<details style="margin-top: 10px; margin-bottom: 20px;">
-<summary><b>Is it safe to run this server?</b></summary>
-<br/>
+<details>
+<summary><b>Where are completed downloads stored?</b></summary>
 
-Yes. The server binds strictly to `127.0.0.1` (localhost) and only handles requests from `https://www.youtube.com`. Other devices on your local network cannot connect or access your filesystem.
+By default, files are saved in your user profile under `Downloads\ytOP`. You can customize this target folder by modifying `DOWNLOAD_DIR` in `yt-dlp-server.py`.
 </details>
 
 ---
 
-## ⚖️ Disclaimer
+## Disclaimer
 
-This software is for personal educational purposes only. Downloading copyrighted material from YouTube without authorization violates YouTube's Terms of Service. The developers are not responsible for any misuse of this tool.
+This software is developed strictly for personal, educational, and backup purposes. Downloading copyrighted content from YouTube without permission may violate YouTube's Terms of Service and local intellectual property laws. The developers assume no liability for misuse of this software.
+
+---
+
+## License
+
+This project is licensed under the terms of the [MIT License](LICENSE).
